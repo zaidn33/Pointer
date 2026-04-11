@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model Card {
@@ -28,7 +28,7 @@ model CardCategoryRule {
   id          String   @id @default(uuid())
   cardId      String
   category    String
-  multiplier  Float
+  multiplier  Float    // e.g., 5.0 for 5x points, 0.04 for 4% cash back
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -39,7 +39,7 @@ model CardCategoryRule {
 
 model Merchant {
   id              String   @id @default(uuid())
-  name            String
+  name            String   @unique
   primaryCategory String
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -56,13 +56,15 @@ model MerchantAlias {
   updatedAt   DateTime @updatedAt
 
   merchant    Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@index([alias])
 }
 
 model CardMerchantBenefit {
   id          String   @id @default(uuid())
   cardId      String
   merchantId  String
-  bonusType   String   // e.g., "multiplier", "cashback", "points"
+  bonusType   String   // e.g., "multiplier", "statement_credit", "cashback"
   bonusValue  Float
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -80,11 +82,14 @@ model Offer {
   cardId      String?
   merchantId  String?
   categoryId  String?
-  bonusType   String
+  bonusType   String   // e.g., "points", "cashback_percentage", "fixed_discount"
   bonusValue  Float
   validFrom   DateTime?
   validTo     DateTime?
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([merchantId])
+  @@index([cardId])
 }
