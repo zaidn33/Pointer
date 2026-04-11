@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Card {
+  id              String   @id @default(uuid())
+  issuer          String
+  network         String
+  name            String
+  annualFee       Float    @default(0)
+  rewardProgram   String?
+  baseEarnRate    Float    @default(1.0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  categoryRules   CardCategoryRule[]
+  merchantBenefits CardMerchantBenefit[]
+}
+
+model CardCategoryRule {
+  id          String   @id @default(uuid())
+  cardId      String
+  category    String
+  multiplier  Float    // e.g., 5.0 for 5x points, 0.04 for 4% cash back
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  card        Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@unique([cardId, category])
+}
+
+model Merchant {
+  id              String   @id @default(uuid())
+  name            String   @unique
+  primaryCategory String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  aliases         MerchantAlias[]
+  merchantBenefits CardMerchantBenefit[]
+}
+
+model MerchantAlias {
+  id          String   @id @default(uuid())
+  merchantId  String
+  alias       String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  merchant    Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@index([alias])
+}
+
+model CardMerchantBenefit {
+  id          String   @id @default(uuid())
+  cardId      String
+  merchantId  String
+  bonusType   String   // e.g., "multiplier", "statement_credit", "cashback"
+  bonusValue  Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  card        Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  merchant    Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@unique([cardId, merchantId])
+}
+
+model Offer {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  cardId      String?
+  merchantId  String?
+  category    String?
+  bonusType   String   // e.g., "points", "cashback_percentage", "fixed_discount"
+  bonusValue  Float
+  validFrom   DateTime?
+  validTo     DateTime?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([merchantId])
+  @@index([cardId])
+}
