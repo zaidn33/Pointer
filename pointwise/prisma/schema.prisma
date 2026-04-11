@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Card {
+  id              String   @id @default(uuid())
+  issuer          String
+  network         String
+  name            String
+  annualFee       Float    @default(0)
+  rewardProgram   String?
+  baseEarnRate    Float    @default(1.0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  categoryRules   CardCategoryRule[]
+  merchantBenefits CardMerchantBenefit[]
+}
+
+model CardCategoryRule {
+  id          String   @id @default(uuid())
+  cardId      String
+  category    String
+  multiplier  Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  card        Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@unique([cardId, category])
+}
+
+model Merchant {
+  id              String   @id @default(uuid())
+  name            String
+  primaryCategory String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  aliases         MerchantAlias[]
+  merchantBenefits CardMerchantBenefit[]
+}
+
+model MerchantAlias {
+  id          String   @id @default(uuid())
+  merchantId  String
+  alias       String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  merchant    Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+}
+
+model CardMerchantBenefit {
+  id          String   @id @default(uuid())
+  cardId      String
+  merchantId  String
+  bonusType   String   // e.g., "multiplier", "cashback", "points"
+  bonusValue  Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  card        Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  merchant    Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@unique([cardId, merchantId])
+}
+
+model Offer {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  cardId      String?
+  merchantId  String?
+  categoryId  String?
+  bonusType   String
+  bonusValue  Float
+  validFrom   DateTime?
+  validTo     DateTime?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
