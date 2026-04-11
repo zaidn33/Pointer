@@ -81,7 +81,7 @@ model Offer {
   description String?
   cardId      String?
   merchantId  String?
-  categoryId  String?
+  category    String?
   bonusType   String   // e.g., "points", "cashback_percentage", "fixed_discount"
   bonusValue  Float
   validFrom   DateTime?
