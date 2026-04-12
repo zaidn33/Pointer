@@ -37,6 +37,35 @@ export async function listWalletCards(userId: string) {
   });
 }
 
+export async function listWalletCardsForRecommendations(userId: string) {
+  return prisma.userCard.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      createdAt: true,
+      card: {
+        select: {
+          ...cardSelect,
+          categoryRules: {
+            select: {
+              category: true,
+              multiplier: true,
+            },
+          },
+          merchantBenefits: {
+            select: {
+              merchantId: true,
+              bonusType: true,
+              bonusValue: true,
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
 export async function addCardToWallet(userId: string, cardId: string) {
   const card = await prisma.card.findUnique({
     where: { id: cardId },
