@@ -1,5 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { listWalletCardsForRecommendations } from '@/lib/wallet';
+import { getRecommendationLlmProvider } from '@/lib/llm';
+import type { ParsedRecommendationIntent } from '@/lib/llm/types';
 
 type RecommendationErrorCode = 'empty_wallet' | 'unresolved_query';
 
@@ -69,6 +71,41 @@ function resolveCategory(normalizedQuery: string) {
   return CATEGORY_ALIASES.get(normalizedQuery) ?? null;
 }
 
+function resolveCategoryCandidate(value: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  const normalizedCategory = normalizeQuery(value);
+  return resolveCategory(normalizedCategory) ?? normalizedCategory;
+}
+
+async function resolveStructuredCategoryCandidate(value: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  const normalizedCategory = normalizeQuery(value);
+  const categoryAlias = resolveCategory(normalizedCategory);
+
+  if (categoryAlias) {
+    return categoryAlias;
+  }
+
+  const categoryRules = await prisma.cardCategoryRule.findMany({
+    distinct: ['category'],
+    select: {
+      category: true,
+    },
+  });
+
+  return (
+    categoryRules.find(
+      ({ category }) => normalizeQuery(category) === normalizedCategory,
+    )?.category ?? null
+  );
+}
+
 async function resolveMerchant(normalizedQuery: string) {
   const merchants = await prisma.merchant.findMany({
     select: {
@@ -110,16 +147,31 @@ async function resolveMerchant(normalizedQuery: string) {
 
 async function resolveRecommendationQuery(
   query: string,
+  intent: ParsedRecommendationIntent | null,
 ): Promise<QueryResolution> {
+  if (intent) {
+    const merchant = intent.merchant
+      ? await resolveMerchant(normalizeQuery(intent.merchant))
+      : null;
+    const category = merchant?.primaryCategory
+      ? resolveCategoryCandidate(merchant.primaryCategory)
+      : await resolveStructuredCategoryCandidate(intent.category);
+
+    if (merchant || category) {
+      return {
+        merchant,
+        category,
+      };
+    }
+  }
+
   const normalizedQuery = normalizeQuery(query);
   const merchant = await resolveMerchant(normalizedQuery);
 
   if (merchant) {
-    const normalizedCategory = normalizeQuery(merchant.primaryCategory);
-
     return {
       merchant,
-      category: resolveCategory(normalizedCategory) ?? normalizedCategory,
+      category: resolveCategoryCandidate(merchant.primaryCategory),
     };
   }
 
@@ -127,6 +179,52 @@ async function resolveRecommendationQuery(
     merchant: null,
     category: resolveCategory(normalizedQuery),
   };
+}
+
+async function loadRecommendationLlmContext() {
+  const [merchants, categoryRules] = await Promise.all([
+    prisma.merchant.findMany({
+      select: {
+        name: true,
+        aliases: {
+          select: {
+            alias: true,
+          },
+        },
+      },
+    }),
+    prisma.cardCategoryRule.findMany({
+      distinct: ['category'],
+      select: {
+        category: true,
+      },
+    }),
+  ]);
+
+  return {
+    merchants: merchants.flatMap((merchant) => [
+      merchant.name,
+      ...merchant.aliases.map(({ alias }) => alias),
+    ]),
+    categories: [
+      ...new Set([
+        ...Array.from(CATEGORY_ALIASES.keys()),
+        ...categoryRules.map(({ category }) => category),
+      ]),
+    ],
+  };
+}
+
+async function parseRecommendationIntent(query: string) {
+  const provider = getRecommendationLlmProvider();
+
+  if (!provider.isEnabled()) {
+    return null;
+  }
+
+  const context = await loadRecommendationLlmContext();
+
+  return provider.parseRecommendationIntent(query, context);
 }
 
 function getSupportedMerchantBenefit(card: WalletCard, merchantId: string) {
@@ -236,6 +334,17 @@ function buildExplanation(
   return `Use ${bestCard.card.name} because it has the strongest base earn rate in your saved wallet for ${target}.`;
 }
 
+function isValidLlmExplanation(
+  explanation: string | null,
+  result: RecommendationResult,
+): explanation is string {
+  return Boolean(
+    explanation &&
+      explanation.includes(result.bestCard.card.name) &&
+      explanation.length <= 240,
+  );
+}
+
 export async function getRecommendationForQuery(
   userId: string,
   query: string,
@@ -249,7 +358,8 @@ export async function getRecommendationForQuery(
     );
   }
 
-  const resolution = await resolveRecommendationQuery(query);
+  const parsedIntent = await parseRecommendationIntent(query);
+  const resolution = await resolveRecommendationQuery(query, parsedIntent);
 
   if (!resolution.merchant && !resolution.category) {
     throw new RecommendationError(
@@ -263,11 +373,25 @@ export async function getRecommendationForQuery(
 
   const bestCard = rankedCards[0];
 
-  return {
+  const result = {
     detectedMerchant: resolution.merchant,
     detectedCategory: resolution.category,
     bestCard,
     rankedCards,
     explanation: buildExplanation(bestCard, resolution),
   };
+
+  const llmExplanation =
+    await getRecommendationLlmProvider().generateRecommendationExplanation(
+      result,
+    );
+
+  if (isValidLlmExplanation(llmExplanation, result)) {
+    return {
+      ...result,
+      explanation: llmExplanation,
+    };
+  }
+
+  return result;
 }
