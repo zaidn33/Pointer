@@ -1,7 +1,15 @@
 import { prisma } from '@/lib/prisma';
 import { listWalletCardsForRecommendations } from '@/lib/wallet';
 import { getRecommendationLlmProvider } from '@/lib/llm';
+import { listMatchedRecommendationOffers } from '@/lib/offers';
+import {
+  listKnownCategoryAliases,
+  normalizeRewardCategory,
+  normalizeRewardText,
+  resolveCategoryAlias,
+} from '@/lib/reward-categories';
 import type { ParsedRecommendationIntent } from '@/lib/llm/types';
+import type { SerializedOffer } from '@/lib/offers';
 
 type RecommendationErrorCode = 'empty_wallet' | 'unresolved_query';
 
@@ -14,13 +22,6 @@ export class RecommendationError extends Error {
     this.name = 'RecommendationError';
   }
 }
-
-const CATEGORY_ALIASES = new Map([
-  ['groceries', 'groceries'],
-  ['grocery', 'groceries'],
-  ['gas', 'gas'],
-  ['fuel', 'gas'],
-]);
 
 type WalletCard = Awaited<
   ReturnType<typeof listWalletCardsForRecommendations>
@@ -57,27 +58,19 @@ export type RecommendationResult = {
   bestCard: RankedRecommendationCard;
   rankedCards: RankedRecommendationCard[];
   explanation: string;
+  matchedOffers: SerializedOffer[];
 };
 
 function normalizeQuery(value: string) {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}\s&]/gu, ' ')
-    .replace(/\s+/g, ' ');
+  return normalizeRewardText(value);
 }
 
 function resolveCategory(normalizedQuery: string) {
-  return CATEGORY_ALIASES.get(normalizedQuery) ?? null;
+  return resolveCategoryAlias(normalizedQuery);
 }
 
 function resolveCategoryCandidate(value: string | null) {
-  if (!value) {
-    return null;
-  }
-
-  const normalizedCategory = normalizeQuery(value);
-  return resolveCategory(normalizedCategory) ?? normalizedCategory;
+  return normalizeRewardCategory(value);
 }
 
 async function resolveStructuredCategoryCandidate(value: string | null) {
@@ -208,7 +201,7 @@ async function loadRecommendationLlmContext() {
     ]),
     categories: [
       ...new Set([
-        ...Array.from(CATEGORY_ALIASES.keys()),
+        ...listKnownCategoryAliases(),
         ...categoryRules.map(({ category }) => category),
       ]),
     ],
@@ -379,6 +372,11 @@ export async function getRecommendationForQuery(
     bestCard,
     rankedCards,
     explanation: buildExplanation(bestCard, resolution),
+    matchedOffers: await listMatchedRecommendationOffers({
+      cardIds: walletCards.map(({ card }) => card.id),
+      merchantId: resolution.merchant?.id ?? null,
+      category: resolution.category,
+    }),
   };
 
   const llmExplanation =
