@@ -1,4 +1,4 @@
-Pointwise is a Canadian credit card rewards tool that helps users decide which card to use for every purchase based on the cards they already have. Users simply select their cards, and Pointwise recommends the best one for groceries, gas, dining, travel, and more while also highlighting card-specific perks and bonus offers. It is privacy-friendly, with no bank logins or card numbers required.
+Pointer is a Canadian credit card rewards tool that helps users decide which card to use for every purchase based on the cards they already have. Users simply select their cards, and Pointer recommends the best one for groceries, gas, dining, travel, and more while also highlighting card-specific perks and bonus offers. It is privacy-friendly, with no bank logins or card numbers required.
 
 Frontend: Next.js, TypeScript, Tailwind CSS
 Backend: Node.js, Next.js API routes, Supabase, PostgreSQL
@@ -10,18 +10,18 @@ Background Jobs / Offer Scanning: Supabase Edge Functions or cron jobs
 Optional Later: Pinecone for semantic search if you add a large amount of offer and rewards data
 
 
-Pointwise PRD
+Pointer PRD
 Product Name
-Pointwise
+Pointer
 Product Overview
-Pointwise is a credit card rewards optimization platform that helps users decide which credit card to use for a given purchase based on the cards they already own. Users do not connect their bank accounts, log in to their bank, or share card numbers. Instead, they simply tell Pointwise which cards they have in their wallet. Pointwise then recommends the best card to use for a specific transaction based on reward multipliers, category bonuses, travel benefits, merchant-specific offers, and card-linked promotions.
-The core value of Pointwise is simple: most people own multiple credit cards but do not know which one gives them the most value for each purchase. As a result, they leave points, cashback, and travel rewards on the table. Pointwise solves this by acting as a smart card advisor that tells users exactly which card to use and why.
+Pointer is a credit card rewards optimization platform that helps users decide which credit card to use for a given purchase based on the cards they already own. Users do not connect their bank accounts, log in to their bank, or share card numbers. Instead, they simply tell Pointer which cards they have in their wallet. Pointer then recommends the best card to use for a specific transaction based on reward multipliers, category bonuses, travel benefits, merchant-specific offers, and card-linked promotions.
+The core value of Pointer is simple: most people own multiple credit cards but do not know which one gives them the most value for each purchase. As a result, they leave points, cashback, and travel rewards on the table. Pointer solves this by acting as a smart card advisor that tells users exactly which card to use and why.
 Examples:
 A user asks: “I am buying groceries at Loblaws. Which card should I use?”
-Pointwise responds: “Use your Amex Cobalt because it earns 5x points on groceries, while your CIBC Aventura earns only 1x.”
+Pointer responds: “Use your Amex Cobalt because it earns 5x points on groceries, while your CIBC Aventura earns only 1x.”
 A user asks: “I am booking a domestic Air Canada flight.”
-Pointwise responds: “Use your Aeroplan-linked Visa because it gives better value on Air Canada purchases and travel redemptions.”
-Pointwise is designed for privacy, simplicity, and trust. It never requests bank login credentials, bank account access, or card numbers. It only stores which cards a user says they own.
+Pointer responds: “Use your Aeroplan-linked Visa because it gives better value on Air Canada purchases and travel redemptions.”
+Pointer is designed for privacy, simplicity, and trust. It never requests bank login credentials, bank account access, or card numbers. It only stores which cards a user says they own.
 Problem Statement
 Consumers with multiple credit cards often do not know which card is best for each spending situation. Reward programs are complicated, card benefits vary by category and merchant, and promotions change over time. Most users either use the same card for everything or guess which one is best, causing them to miss valuable points, travel rewards, cashback, welcome bonuses, and merchant offers.
 There is currently no easy, privacy-friendly tool that helps users answer questions like:
@@ -31,7 +31,7 @@ Which card should I use for dining?
 Which card should I use for booking flights?
 Which of my cards has the best value at this store?
 Are there any active promotions or card-linked offers I should use?
-Pointwise addresses this gap by creating a simple recommendation engine based only on the user’s selected cards and public reward logic.
+Pointer addresses this gap by creating a simple recommendation engine based only on the user’s selected cards and public reward logic.
 Vision
 To become the smartest and most trusted rewards decision engine for Canadian consumers by helping them maximize the value of every purchase without requiring access to sensitive banking data.
 Mission
@@ -65,7 +65,7 @@ Rewards hobbyists who want a cleaner way to compare card usage.
 Users considering new cards and wanting lifestyle-based card suggestions in the future.
 
 Value Proposition
-Pointwise helps users get the most out of the credit cards they already own by telling them exactly which card to use for each transaction. Unlike bank aggregation tools, Pointwise does not ask for bank logins or sensitive financial data. It is a privacy-friendly rewards advisor that turns a confusing rewards ecosystem into clear, actionable decisions. i’m
+Pointer helps users get the most out of the credit cards they already own by telling them exactly which card to use for each transaction. Unlike bank aggregation tools, Pointer does not ask for bank logins or sensitive financial data. It is a privacy-friendly rewards advisor that turns a confusing rewards ecosystem into clear, actionable decisions. i’m
 Core Product Principles
 Privacy first
 Clarity over complexity
@@ -98,7 +98,7 @@ Browser extension
 Native mobile app builds in version 1, since the MVP will launch as a website first
 Product Features
 1. Card Wallet Setup
-Users can build a digital wallet inside Pointwise by selecting which credit cards they already own.
+Users can build a digital wallet inside Pointer by selecting which credit cards they already own.
 Functional Requirements
 Users can search and select cards from a predefined list.
 Each card record includes issuer, network, annual fee, reward program, category multipliers, merchant benefits, and known travel perks.
@@ -110,7 +110,7 @@ Card setup must be simple and visual.
 Cards should be displayed with recognizable branding and key multipliers.
 Onboarding should take under 2 minutes.
 2. Transaction Recommendation Engine
-Users can ask Pointwise which card they should use for a given transaction.
+Users can ask Pointer which card they should use for a given transaction.
 Example Inputs
 “Which card should I use at Loblaws?”
 “I am buying groceries.”
@@ -134,7 +134,7 @@ Domestic vs international travel context
 Eligible bonus campaigns
 Base earn rate fallback
 3. Merchant and Category Mapping
-Pointwise must map merchants to categories so that the recommendation engine can determine which category bonus applies.
+Pointer must map merchants to categories so that the recommendation engine can determine which category bonus applies.
 Examples:
 Loblaws → Grocery
 Petro-Canada → Gas
@@ -147,7 +147,7 @@ Support multiple aliases for merchant names.
 Allow manual admin updates to merchant mapping.
 Support merchant-specific overrides where a merchant has unique treatment.
 4. Offer and Bonus Detection
-Pointwise should show users when one of their cards has a special offer or linked benefit that makes it more valuable than usual.
+Pointer should show users when one of their cards has a special offer or linked benefit that makes it more valuable than usual.
 Examples:
 Link card to Starbucks and receive a large points bonus.
 Earn extra points on Air Canada bookings with a specific card.
@@ -160,7 +160,7 @@ Expire offers automatically based on end date.
 MVP Note
 In version 1, offers may be manually curated or updated from public offer pages through admin workflows.
 5. AI Advisor Interface
-Pointwise should provide a conversational interface where users can ask questions naturally. This experience will be powered primarily by LLMs so the product feels fast, flexible, and easy to use.
+Pointer should provide a conversational interface where users can ask questions naturally. This experience will be powered primarily by LLMs so the product feels fast, flexible, and easy to use.
 Examples:
 “I have Amex Cobalt and Aventura. Which card should I use for groceries?”
 “What is the best card in my wallet for booking a domestic flight?”
@@ -173,9 +173,9 @@ Support follow-up questions in a conversational flow.
 Be designed to work with leading LLM providers such as OpenAI, Gemini, Claude, Grok, or similar models.
 Use structured card and offer data as grounding context wherever possible.
 Product Principle
-The product experience will be heavily powered by LLMs because they are fast, flexible, and strong at answering natural language questions. Pointwise should use LLMs to interpret queries, explain recommendations, and provide a more intelligent user experience. Structured card, merchant, and offer data should still be used to ground answers and improve reliability.
+The product experience will be heavily powered by LLMs because they are fast, flexible, and strong at answering natural language questions. Pointer should use LLMs to interpret queries, explain recommendations, and provide a more intelligent user experience. Structured card, merchant, and offer data should still be used to ground answers and improve reliability.
 6. Best Card by Lifestyle
-Pointwise should eventually help users understand which card fits their lifestyle best overall.
+Pointer should eventually help users understand which card fits their lifestyle best overall.
 Examples:
 Best card in my wallet for groceries and dining
 Best travel card in my wallet
@@ -368,7 +368,7 @@ Example Rule
 If merchant category is grocery and user has Amex Cobalt, score it highly due to grocery multiplier. If merchant does not accept Amex, recommend the next best Visa or Mastercard option.
 UX Requirements
 Website Structure
-Pointwise version 1 will be a website, not a native mobile app. The product should be designed as a multi-page web experience so each major feature has its own space and the demo feels clear, structured, and easy to navigate.
+Pointer version 1 will be a website, not a native mobile app. The product should be designed as a multi-page web experience so each major feature has its own space and the demo feels clear, structured, and easy to navigate.
 Landing Page
 Clear message: stop leaving points on the table.
 Explain that users only enter which cards they own.
@@ -391,7 +391,7 @@ Reward categories and multipliers.
 Merchant-specific benefits.
 Known travel benefits and notes.
 Linked offers and promotions.
-Ask Pointwise Page
+Ask Pointer Page
 Search bar or conversational input.
 Example prompts.
 Instant recommendation card.
@@ -449,11 +449,11 @@ Personalized card upgrade suggestions
 Open Questions
 How many Canadian cards should be supported at launch?
 Will offers be curated manually or partially automated in MVP?
-How should Pointwise calculate “value” when comparing different reward currencies?
+How should Pointer calculate “value” when comparing different reward currencies?
 Should the MVP optimize for points only, or also cashback and travel perks?
 Should recommendations consider annual fee impact in later versions?
 Release Recommendation
-The first version should focus on doing one thing exceptionally well: helping users select the best card from the cards they already own for a given purchase through a clean, organized website experience. The product should be structured across separate pages such as wallet, flights, offers, and card details so users can explore the product easily and demos feel polished. It should be fast, easy to trust, and simple to understand. The Ask Pointwise experience should lean heavily on LLMs to make the product feel conversational and intelligent, while still using structured card and offer data in the background to improve answer quality.
+The first version should focus on doing one thing exceptionally well: helping users select the best card from the cards they already own for a given purchase through a clean, organized website experience. The product should be structured across separate pages such as wallet, flights, offers, and card details so users can explore the product easily and demos feel polished. It should be fast, easy to trust, and simple to understand. The Ask Pointer experience should lean heavily on LLMs to make the product feel conversational and intelligent, while still using structured card and offer data in the background to improve answer quality.
 One-Line Summary
-Pointwise is a privacy-first rewards optimization platform that tells users which credit card to use for every purchase based on the cards they already own, helping them maximize points, benefits, and offers without sharing sensitive banking information.
+Pointer is a privacy-first rewards optimization platform that tells users which credit card to use for every purchase based on the cards they already own, helping them maximize points, benefits, and offers without sharing sensitive banking information.
 

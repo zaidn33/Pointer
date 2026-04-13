@@ -2,11 +2,11 @@
 
 ## Project
 
-Pointwise
+Pointer
 
 ## What This Project Is
 
-Pointwise is a website-first credit card rewards optimization platform for Canadian users. Users select the credit cards they already own, then ask Pointwise which card they should use for a specific purchase, merchant, or travel booking.
+Pointer is a website-first credit card rewards optimization platform for Canadian users. Users select the credit cards they already own, then ask Pointer which card they should use for a specific purchase, merchant, or travel booking.
 
 The system recommends the best card based on structured reward logic, merchant/category mapping, offers, and travel relevance. The product does not connect to banks, does not ask for bank logins, and does not collect card numbers.
 
@@ -21,9 +21,9 @@ Examples:
 
 ## Core Product Rule
 
-Users only tell Pointwise which cards they have.
+Users only tell Pointer which cards they have.
 
-Pointwise must never require:
+Pointer must never require:
 
 * bank usernames
 * bank passwords
@@ -34,7 +34,7 @@ Pointwise must never require:
 
 ## Current Product Shape
 
-Pointwise is a website, not a native mobile app.
+Pointer is a website, not a native mobile app.
 
 The product should be organized across separate pages, not one overloaded screen.
 
@@ -44,7 +44,7 @@ Primary pages:
 * dashboard
 * wallet page
 * card detail page
-* Ask Pointwise page
+* Ask Pointer page
 * flights page
 * offers page
 
@@ -64,7 +64,7 @@ Important principles:
 
 ## AI and Recommendation Philosophy
 
-Pointwise is heavily LLM-powered, especially for the Ask Pointwise experience.
+Pointer is heavily LLM-powered, especially for the Ask Pointer experience.
 
 However, do not build this as a pure LLM guessing system.
 
@@ -160,7 +160,7 @@ Purpose:
 * show a card’s categories, rules, and benefits
 * show relevant offers
 
-### Ask Pointwise Page
+### Ask Pointer Page
 
 Purpose:
 

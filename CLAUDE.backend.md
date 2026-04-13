@@ -1,11 +1,11 @@
 CLAUDE.backend.md
 Scope
 This file is for backend implementation work only.
-Use this document when working on Pointwise backend systems, APIs, data models, recommendation logic, admin tools, LLM orchestration, and infrastructure-related code.
+Use this document when working on Pointer backend systems, APIs, data models, recommendation logic, admin tools, LLM orchestration, and infrastructure-related code.
 Do not use this file as the main guide for frontend design or UI implementation.
 Project Summary
-Pointwise is a website-first credit card rewards optimization platform for Canadian users.
-Users select the credit cards they already own, then ask Pointwise which card they should use for a specific merchant, purchase category, or travel booking.
+Pointer is a website-first credit card rewards optimization platform for Canadian users.
+Users select the credit cards they already own, then ask Pointer which card they should use for a specific merchant, purchase category, or travel booking.
 The backend must support accurate recommendations without asking for:
 bank logins
 bank account connections
