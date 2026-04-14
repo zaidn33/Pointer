@@ -5,6 +5,9 @@ export type ApiErrorCode =
   | 'conflict'
   | 'internal_error';
 
+export const REQUIRED_FLIGHT_SEARCH_PARAMS_MESSAGE =
+  'Missing required parameters: origin, destination';
+
 export function jsonError(
   status: number,
   code: ApiErrorCode,
@@ -24,4 +27,8 @@ export async function readJsonObject(request: Request) {
   } catch {
     return null;
   }
+}
+
+export function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : 'Unknown error';
 }

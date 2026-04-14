@@ -3,6 +3,9 @@ import { MockFlightProvider } from "./provider";
 import { normalizeResponse } from "./normalize";
 import { enrichFlight } from "./enrich";
 import { EnrichedFlightResult, MatchedFlightResult } from "./match-types";
+import { listWalletCardsForFlights } from "../wallet";
+import { adaptWalletCardToFlightInput } from "./wallet-adapter";
+import { matchWalletToFlight } from "./card-match";
 
 export class FlightService {
   private provider: MockFlightProvider;
@@ -38,38 +41,21 @@ export class FlightService {
   }
 
   async matchFlightsToWallet(userId: string, criteria: FlightSearchCriteria): Promise<FlightSearchResponse<MatchedFlightResult>> {
-    // 1. Get enriched flights
     const enrichedResponse = await this.searchFlights(criteria);
 
-    // 2. Load wallet (mocking for safety out of tightly coupled DB logic in testing but ordinarily Prisma fetch)
-    const { getWalletForUser } = require("../wallet"); // Dynamically import to avoid top level coupling if needed
-    // In actual implementation, we might do:
-    // const userWallet = await getWalletForUser(userId);
-    // Since this is deterministic without changing DB wrappers, let's assume getWalletForUser fetches UserCards.
-    
-    // For now we'll do real DB fetch for UserCard including Card
-    const { prisma } = require("../prisma");
-    const userCards = await prisma.userCard.findMany({
-      where: { userId },
-      include: { card: true }
-    });
+    const userCards = await listWalletCardsForFlights(userId);
+    const walletInputs = userCards.map(({ card }) => adaptWalletCardToFlightInput(card));
 
-    const rawCards = userCards.map((uc: any) => uc.card);
-    
-    // 3. Adapt wallet
-    const { adaptWalletCardToFlightInput } = require("./wallet-adapter");
-    const walletInputs = rawCards.map((c: any) => adaptWalletCardToFlightInput(c));
-
-    // 4. Match
-    const { matchWalletToFlight } = require("./card-match");
-    
-    const matchedResults = enrichedResponse.results.map((er: any) => {
-      const matches = matchWalletToFlight(er, walletInputs);
-      return {
-        ...er,
-        cardMatches: matches
-      };
-    });
+    const matchedResults =
+      walletInputs.length === 0
+        ? enrichedResponse.results.map((er) => ({
+            ...er,
+            cardMatches: [],
+          }))
+        : enrichedResponse.results.map((er) => ({
+            ...er,
+            cardMatches: matchWalletToFlight(er, walletInputs),
+          }));
 
     return {
       criteria: enrichedResponse.criteria,

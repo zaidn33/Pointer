@@ -1,5 +1,10 @@
 import { EnrichedFlightResult } from "./match-types";
 import { WalletCardFlightInput, FlightCardRuleResult, CardMatchReason, CardBenefitTag } from "./card-match-types";
+import {
+  FLIGHT_MATCH_REASONS,
+  FLIGHT_MATCH_SCORE_WEIGHTS,
+  FLIGHT_MATCH_TAGS,
+} from "./config";
 
 export function evaluateCardRules(card: WalletCardFlightInput, flight: EnrichedFlightResult): FlightCardRuleResult {
   let score = 0;
@@ -18,43 +23,43 @@ export function evaluateCardRules(card: WalletCardFlightInput, flight: EnrichedF
     }
   }
   if (airlineMatched) {
-    score += 4;
-    reasons.push("airline_partner_match"); // strongly typed now!
+    score += FLIGHT_MATCH_SCORE_WEIGHTS.airlinePartner;
+    reasons.push(FLIGHT_MATCH_REASONS.airlinePartner);
   }
 
   // Rule 2: No-FX Relevance for International Travel
   if (signals.isInternational && card.hasNoForeignTransactionFee) {
-    score += 3;
-    reasons.push("no_fx_fee_relevance");
-    matchedTags.push("no_fx_fees");
+    score += FLIGHT_MATCH_SCORE_WEIGHTS.noForeignTransactionFee;
+    reasons.push(FLIGHT_MATCH_REASONS.noForeignTransactionFee);
+    matchedTags.push(FLIGHT_MATCH_TAGS.noForeignTransactionFee);
   }
 
   // Rule 3: Lounge relevance for long-haul or multi-stop
   if ((signals.isLongHaul || signals.stopCount > 0) && card.loungeBenefits.length > 0) {
-    score += 3;
-    reasons.push("lounge_access_relevance");
-    matchedTags.push("lounge_access");
+    score += FLIGHT_MATCH_SCORE_WEIGHTS.loungeAccess;
+    reasons.push(FLIGHT_MATCH_REASONS.loungeAccess);
+    matchedTags.push(FLIGHT_MATCH_TAGS.loungeAccess);
   }
 
   // Rule 4: Travel Redemption Relevance
   if (signals.pointsFriendlyTags.length > 0 && card.airlineTransferPartners.length > 0) {
-    score += 2;
-    reasons.push("travel_redemption_relevance");
-    matchedTags.push("redemption_points_redeemable");
+    score += FLIGHT_MATCH_SCORE_WEIGHTS.travelRedemption;
+    reasons.push(FLIGHT_MATCH_REASONS.travelRedemption);
+    matchedTags.push(FLIGHT_MATCH_TAGS.travelRedemption);
   }
 
   // Rule 5: Premium Travel Relevance
   if (signals.premiumTravelTags.length > 0 && card.premiumTravelTags.length > 0) {
-    score += 2;
-    reasons.push("premium_travel_relevance");
-    matchedTags.push("premium_travel_benefits");
+    score += FLIGHT_MATCH_SCORE_WEIGHTS.premiumTravel;
+    reasons.push(FLIGHT_MATCH_REASONS.premiumTravel);
+    matchedTags.push(FLIGHT_MATCH_TAGS.premiumTravel);
   }
 
   // Rule 6: Travel Insurance Relevance
   if (card.travelInsuranceMarkers.length > 0 && (signals.isInternational || signals.isLongHaul)) {
-    score += 1;
-    reasons.push("travel_insurance_relevance");
-    matchedTags.push("comprehensive_travel_insurance");
+    score += FLIGHT_MATCH_SCORE_WEIGHTS.travelInsurance;
+    reasons.push(FLIGHT_MATCH_REASONS.travelInsurance);
+    matchedTags.push(FLIGHT_MATCH_TAGS.travelInsurance);
   }
 
   return {

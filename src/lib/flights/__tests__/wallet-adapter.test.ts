@@ -1,9 +1,12 @@
 import test from "node:test";
 import assert from "node:assert";
-import { adaptWalletCardToFlightInput } from "../wallet-adapter";
+import {
+  adaptWalletCardToFlightInput,
+  FlightWalletCardRecord,
+} from "../wallet-adapter";
 
 test("adaptWalletCardToFlightInput: catalog match for Amex Cobalt", () => {
-  const mockDbCard: any = {
+  const mockDbCard: FlightWalletCardRecord = {
     id: "card_cobalt",
     name: "Amex Cobalt",
     issuer: "American Express",
@@ -19,8 +22,23 @@ test("adaptWalletCardToFlightInput: catalog match for Amex Cobalt", () => {
   assert.ok(adapted.airlineTransferPartners.includes("British Airways"));
 });
 
+test("adaptWalletCardToFlightInput: catalog values win over fallback markers", () => {
+  const mockDbCard: FlightWalletCardRecord = {
+    id: "card_cobalt_scotia",
+    name: "Amex Cobalt Scotia Travel Alias",
+    issuer: "American Express",
+    network: "Amex",
+    annualFee: 156
+  };
+
+  const adapted = adaptWalletCardToFlightInput(mockDbCard);
+
+  assert.strictEqual(adapted.hasNoForeignTransactionFee, false);
+  assert.ok(adapted.airlineTransferPartners.includes("Air Canada"));
+});
+
 test("adaptWalletCardToFlightInput: catalog match for Scotia Passport", () => {
-  const mockDbCard: any = {
+  const mockDbCard: FlightWalletCardRecord = {
     id: "card_passport",
     name: "Scotiabank Passport Visa Infinite",
     issuer: "Scotiabank",
@@ -36,7 +54,7 @@ test("adaptWalletCardToFlightInput: catalog match for Scotia Passport", () => {
 });
 
 test("adaptWalletCardToFlightInput: fallback heuristic for unknown card", () => {
-  const mockDbCard: any = {
+  const mockDbCard: FlightWalletCardRecord = {
     id: "unknown_1",
     name: "Generic Travel Card",
     issuer: "RandomBank",

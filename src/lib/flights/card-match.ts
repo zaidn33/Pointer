@@ -1,8 +1,7 @@
 import { EnrichedFlightResult } from "./match-types";
 import { WalletCardFlightInput, WalletFlightCardMatch } from "./card-match-types";
 import { evaluateCardRules } from "./card-rules";
-
-const TOP_N_LIMIT = 3;
+import { FLIGHT_MATCH_TOP_N_LIMIT } from "./config";
 
 export function matchWalletToFlight(flight: EnrichedFlightResult, wallet: WalletCardFlightInput[]): WalletFlightCardMatch[] {
   const matches: WalletFlightCardMatch[] = [];
@@ -34,6 +33,5 @@ export function matchWalletToFlight(flight: EnrichedFlightResult, wallet: Wallet
     return a.card.id.localeCompare(b.card.id);
   });
 
-  // Enforce top-N limit
-  return matches.slice(0, TOP_N_LIMIT);
+  return matches.slice(0, FLIGHT_MATCH_TOP_N_LIMIT);
 }

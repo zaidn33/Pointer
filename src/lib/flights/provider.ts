@@ -1,4 +1,4 @@
-import { FlightSearchCriteria, RawMockResponse, RawMockFlight, RawMockFlightSegment } from "./types";
+import { FlightSearchCriteria, RawMockResponse } from "./types";
 
 export interface FlightProvider {
   name: string;

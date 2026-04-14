@@ -33,8 +33,6 @@ export interface EnrichedFlightResult {
   matchContext: FlightCardMatchContext;
 }
 
-// Add forward declaration for wallet flight match
-// using any to avoid circular imports if needed, or import WalletFlightCardMatch
 import type { WalletFlightCardMatch } from "./card-match-types";
 
 export interface MatchedFlightResult extends EnrichedFlightResult {

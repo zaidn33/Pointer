@@ -30,13 +30,14 @@ export interface Flight {
 }
 
 // Forward declaration since EnrichedFlightResult is mapped outside
-export interface FlightSearchResponse<T = any> {
+export interface FlightSearchResponse<T = Flight> {
   criteria: FlightSearchCriteria;
   results: T[];
   meta: {
     provider: string;
     resultCount: number;
     mock?: boolean;
+    walletCardCount?: number;
   };
 }
 

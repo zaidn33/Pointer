@@ -1,6 +1,7 @@
 import assert from "node:assert";
 import test from "node:test";
 import { normalizeResponse, normalizeFlight } from "../normalize";
+import { RawMockFlight, RawMockResponse } from "../types";
 
 test("normalizeFlight correctly maps standard valid data", () => {
   const mockData = {
@@ -37,7 +38,7 @@ test("normalizeFlight correctly maps standard valid data", () => {
 });
 
 test("normalizeFlight handles missing/null values safely", () => {
-  const mockData: any = {
+  const mockData = {
     // Missing flight_id
     cash_price: 0,
     points_req: null,
@@ -45,10 +46,10 @@ test("normalizeFlight handles missing/null values safely", () => {
     // Missing currency_code
     total_time: 0,
     legs: null, // should handle null legs gracefully
-  };
+  } as unknown as RawMockFlight;
 
   const result = normalizeFlight(mockData, "mock");
-  assert.ok(result.id); // Should have generated a fallback ID
+  assert.strictEqual(result.id, "fl_mock_0");
   assert.strictEqual(result.providerId, "mock");
   assert.strictEqual(result.price, 0);
   assert.strictEqual(result.pointsCost, undefined);
@@ -58,15 +59,36 @@ test("normalizeFlight handles missing/null values safely", () => {
   assert.deepStrictEqual(result.segments, []);
 });
 
+test("normalizeResponse uses deterministic fallback IDs for malformed provider rows", () => {
+  const rawInput = {
+    search_params: {},
+    count: 2,
+    flights: [
+      { cash_price: 50, legs: [{ carrier: "Air Canada" }] },
+      { cash_price: 75, legs: [{ carrier: "WestJet" }] },
+    ],
+  } as unknown as RawMockResponse;
+
+  const result = normalizeResponse(rawInput, "mock");
+
+  assert.strictEqual(result[0].id, "fl_mock_0");
+  assert.strictEqual(result[1].id, "fl_mock_1");
+  assert.strictEqual(result[0].segments[0].id, "seg_mock_0");
+  assert.strictEqual(
+    result[0].segments[0].departureTime,
+    "1970-01-01T00:00:00.000Z",
+  );
+});
+
 test("normalizeResponse maps arrays properly", () => {
-  const rawInput: any = {
+  const rawInput = {
     search_params: {},
     count: 1,
     flights: [
       { flight_id: "1", cash_price: 50 },
       { flight_id: "2", cash_price: 75 },
     ]
-  };
+  } as RawMockResponse;
 
   const result = normalizeResponse(rawInput, "mock");
   assert.strictEqual(result.length, 2);
@@ -75,9 +97,12 @@ test("normalizeResponse maps arrays properly", () => {
 });
 
 test("normalizeResponse handles malformed root correctly", () => {
-  const result1 = normalizeResponse(null as any, "mock");
+  const result1 = normalizeResponse(null as unknown as RawMockResponse, "mock");
   assert.deepStrictEqual(result1, []);
 
-  const result2 = normalizeResponse({ flights: null } as any, "mock");
+  const result2 = normalizeResponse(
+    { flights: null } as unknown as RawMockResponse,
+    "mock",
+  );
   assert.deepStrictEqual(result2, []);
 });

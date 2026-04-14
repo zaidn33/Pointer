@@ -23,6 +23,14 @@ const cardSelect = {
   baseEarnRate: true,
 } satisfies Prisma.CardSelect;
 
+const flightCardSelect = {
+  id: true,
+  issuer: true,
+  network: true,
+  name: true,
+  annualFee: true,
+} satisfies Prisma.CardSelect;
+
 export async function listWalletCards(userId: string) {
   return prisma.userCard.findMany({
     where: { userId },
@@ -61,6 +69,18 @@ export async function listWalletCardsForRecommendations(userId: string) {
             },
           },
         },
+      },
+    },
+  });
+}
+
+export async function listWalletCardsForFlights(userId: string) {
+  return prisma.userCard.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
+    select: {
+      card: {
+        select: flightCardSelect,
       },
     },
   });

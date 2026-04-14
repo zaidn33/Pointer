@@ -1,14 +1,29 @@
 import { WalletCardFlightInput } from "./card-match-types";
 import { type Card } from "@prisma/client";
 import { CARD_BENEFITS_CATALOG } from "./card-benefits-catalog";
+import { FLIGHT_WALLET_FALLBACK_CONFIG } from "./config";
 
-export function adaptWalletCardToFlightInput(card: Card & { categoryRules?: any[], merchantBenefits?: any[] }): WalletCardFlightInput {
+export type FlightWalletCardRecord = Pick<
+  Card,
+  "id" | "name" | "issuer" | "network" | "annualFee"
+>;
+
+const NORMALIZED_CARD_BENEFITS_CATALOG = Object.values(CARD_BENEFITS_CATALOG).map(
+  (entry) => ({
+    ...entry,
+    normalizedKnownNames: entry.knownNames.map((knownName) =>
+      knownName.toLowerCase(),
+    ),
+  }),
+);
+
+export function adaptWalletCardToFlightInput(card: FlightWalletCardRecord): WalletCardFlightInput {
   
   const nameLowercase = card.name.toLowerCase();
   
   // 1. Exact or normalized matching from canonical catalog
-  for (const [key, entry] of Object.entries(CARD_BENEFITS_CATALOG)) {
-    if (entry.knownNames.some(kn => nameLowercase.includes(kn.toLowerCase()))) {
+  for (const entry of NORMALIZED_CARD_BENEFITS_CATALOG) {
+    if (entry.normalizedKnownNames.some((knownName) => nameLowercase.includes(knownName))) {
       return {
         id: card.id,
         name: card.name,
@@ -24,33 +39,39 @@ export function adaptWalletCardToFlightInput(card: Card & { categoryRules?: any[
   }
 
   // 2. Deterministic Fallback Heuristics
-  let hasNoForeignTransactionFee = false;
-  if (nameLowercase.includes("scotia") || nameLowercase.includes("wealthsimple")) {
-    hasNoForeignTransactionFee = true;
-  }
+  const hasNoForeignTransactionFee =
+    FLIGHT_WALLET_FALLBACK_CONFIG.noForeignTransactionFeeNameMarkers.some(
+      (marker) => nameLowercase.includes(marker),
+    );
 
   const airlineTransferPartners: string[] = [];
-  if (nameLowercase.includes("aeroplan")) {
-    airlineTransferPartners.push("Air Canada");
-    airlineTransferPartners.push("Star Alliance");
+  if (nameLowercase.includes(FLIGHT_WALLET_FALLBACK_CONFIG.aeroplanNameMarker)) {
+    airlineTransferPartners.push(...FLIGHT_WALLET_FALLBACK_CONFIG.aeroplanPartners);
   }
-  if (nameLowercase.includes("avion")) {
-    airlineTransferPartners.push("Oneworld");
-    airlineTransferPartners.push("British Airways");
+  if (nameLowercase.includes(FLIGHT_WALLET_FALLBACK_CONFIG.avionNameMarker)) {
+    airlineTransferPartners.push(...FLIGHT_WALLET_FALLBACK_CONFIG.avionPartners);
   }
 
   const loungeBenefits: string[] = [];
-  if (nameLowercase.includes("visa infinite privilege") || nameLowercase.includes("platinum") || nameLowercase.includes("reserve")) {
+  if (
+    FLIGHT_WALLET_FALLBACK_CONFIG.loungeNameMarkers.some((marker) =>
+      nameLowercase.includes(marker),
+    )
+  ) {
     loungeBenefits.push("Priority Pass");
   }
 
   const premiumTravelTags: string[] = [];
-  if (nameLowercase.includes("reserve") || nameLowercase.includes("platinum") || nameLowercase.includes("privilege")) {
+  if (
+    FLIGHT_WALLET_FALLBACK_CONFIG.premiumTravelNameMarkers.some((marker) =>
+      nameLowercase.includes(marker),
+    )
+  ) {
     premiumTravelTags.push("premium_travel_benefits");
   }
 
   const travelInsuranceMarkers: string[] = [];
-  if (card.annualFee > 100) {
+  if (card.annualFee > FLIGHT_WALLET_FALLBACK_CONFIG.travelInsuranceAnnualFeeThreshold) {
     travelInsuranceMarkers.push("comprehensive_travel_insurance");
   }
 

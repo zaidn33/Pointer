@@ -1,37 +1,24 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import {
+  getErrorMessage,
+  jsonError,
+  REQUIRED_FLIGHT_SEARCH_PARAMS_MESSAGE,
+} from "@/lib/api";
+import { parseFlightSearchCriteria } from "@/lib/flights/criteria";
 import { flightService } from "@/lib/flights/service";
 
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    
-    const origin = searchParams.get("origin");
-    const destination = searchParams.get("destination");
-    
-    if (!origin || !destination) {
-      return NextResponse.json(
-        { error: "Missing required parameters: origin, destination" },
-        { status: 400 }
-      );
+    const criteria = parseFlightSearchCriteria(request.nextUrl.searchParams);
+
+    if (!criteria) {
+      return jsonError(400, "bad_request", REQUIRED_FLIGHT_SEARCH_PARAMS_MESSAGE);
     }
-    
-    const criteria = {
-      origin,
-      destination,
-      departureDate: searchParams.get("departureDate") || undefined,
-      returnDate: searchParams.get("returnDate") || undefined,
-      cabin: searchParams.get("cabin") || undefined,
-      passengers: parseInt(searchParams.get("passengers") || "1", 10),
-    };
 
     const response = await flightService.searchFlights(criteria);
-    return NextResponse.json(response);
-    
-  } catch (error: any) {
+    return Response.json(response);
+  } catch (error: unknown) {
     console.error("Flight search error:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error", details: error.message },
-      { status: 500 }
-    );
+    return jsonError(500, "internal_error", getErrorMessage(error));
   }
 }

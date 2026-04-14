@@ -1,16 +1,6 @@
 import { Flight } from "./types";
 import { FlightRecommendationSignal } from "./match-types";
-
-// Known alliance mappings (hardcoded simplistic matching for now)
-const ALLIANCES: Record<string, string[]> = {
-  "Air Canada": ["Star Alliance"],
-  "United Airlines": ["Star Alliance"],
-  "Delta": ["SkyTeam"],
-  "WestJet": [], // Not in major alliance
-};
-
-// Known domestic airports (to deduce international or not)
-const CANADIAN_AIRPORTS = ["YYZ", "YYC", "YVR", "YUL", "YOW"];
+import { FLIGHT_SIGNALS_CONFIG } from "./config";
 
 export function generateFlightSignals(flight: Flight, cabinParam?: string): FlightRecommendationSignal {
   // Extract all distinct airlines
@@ -21,7 +11,10 @@ export function generateFlightSignals(flight: Flight, cabinParam?: string): Flig
   // Extract alliances
   const alliancesSet = new Set<string>();
   airlines.forEach(airline => {
-    const al = ALLIANCES[airline];
+    const al =
+      FLIGHT_SIGNALS_CONFIG.alliancesByAirline[
+        airline as keyof typeof FLIGHT_SIGNALS_CONFIG.alliancesByAirline
+      ];
     if (al) al.forEach(a => alliancesSet.add(a));
   });
 
@@ -31,20 +24,25 @@ export function generateFlightSignals(flight: Flight, cabinParam?: string): Flig
   if (flight.segments.length > 0) {
     const firstOrig = flight.segments[0].origin;
     const lastDest = flight.segments[flight.segments.length - 1].destination;
-    if (!CANADIAN_AIRPORTS.includes(firstOrig) || !CANADIAN_AIRPORTS.includes(lastDest)) {
+    if (
+      !FLIGHT_SIGNALS_CONFIG.canadianAirports.includes(
+        firstOrig as (typeof FLIGHT_SIGNALS_CONFIG.canadianAirports)[number],
+      ) ||
+      !FLIGHT_SIGNALS_CONFIG.canadianAirports.includes(
+        lastDest as (typeof FLIGHT_SIGNALS_CONFIG.canadianAirports)[number],
+      )
+    ) {
       isInternational = true;
     }
   }
 
-  // Calculate long-haul
-  // Heuristic: Total duration > 360 mins (6 hours)
-  const isLongHaul = flight.totalDurationMinutes >= 360;
+  const isLongHaul = flight.totalDurationMinutes >= FLIGHT_SIGNALS_CONFIG.longHaulMinutes;
 
   // Stops
   const stopCount = Math.max(0, flight.segments.length - 1);
 
   // Cabin
-  const cabinClass = cabinParam || "economy";
+  const cabinClass = cabinParam || FLIGHT_SIGNALS_CONFIG.defaultCabin;
 
   const premiumTravelTags = cabinClass !== "economy" ? ["premium_cabin"] : [];
   

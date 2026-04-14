@@ -1,7 +1,11 @@
 import test from "node:test";
 import assert from "node:assert";
 import { matchWalletToFlight } from "../card-match";
-import { EnrichedFlightResult } from "../match-types";
+import {
+  EnrichedFlightResult,
+  FlightCardMatchContext,
+  FlightExplanationInput,
+} from "../match-types";
 import { WalletCardFlightInput } from "../card-match-types";
 
 const mockFlight: EnrichedFlightResult = {
@@ -24,8 +28,18 @@ const mockFlight: EnrichedFlightResult = {
     tripType: "international_long_haul",
     pointsFriendlyTags: ["points_redeemable"]
   },
-  explanationInput: {} as any,
-  matchContext: {} as any
+  explanationInput: {
+    airlineLoyaltyRelevance: null,
+    premiumCabinRelevance: null,
+    internationalTravelRelevance: null,
+    stopMinimizationRelevance: null,
+  } satisfies FlightExplanationInput,
+  matchContext: {
+    airlineBenefitTags: [],
+    travelRedemptionRelevance: [],
+    loungePerkRelevance: [],
+    foreignTransactionRelevance: null,
+  } satisfies FlightCardMatchContext
 };
 
 test("matchWalletToFlight: top-3 limit and stable sorting", () => {
