@@ -1,26 +1,147 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --cream: #f5f1e8;
+  --cream-soft: #ece6d6;
+  --cream-warm: #e6dec5;
+  --paper: #faf6ec;
+  --ink: #1a1411;
+  --ink-soft: #3b302a;
+  --ink-muted: #6f6258;
+  --burgundy: #6b1414;
+  --burgundy-deep: #4a0c0c;
+  --burgundy-bright: #8a1a1a;
+  --rust: #b3361a;
+  --gold: #c99632;
+  --gold-bright: #d9a836;
+  --line: rgba(26, 20, 17, 0.12);
+  --line-soft: rgba(26, 20, 17, 0.07);
+  --background: var(--cream);
+  --foreground: var(--ink);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-cream: var(--cream);
+  --color-cream-soft: var(--cream-soft);
+  --color-cream-warm: var(--cream-warm);
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-muted: var(--ink-muted);
+  --color-burgundy: var(--burgundy);
+  --color-burgundy-deep: var(--burgundy-deep);
+  --color-burgundy-bright: var(--burgundy-bright);
+  --color-rust: var(--rust);
+  --color-gold: var(--gold);
+  --color-gold-bright: var(--gold-bright);
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-fraunces);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--font-inter), -apple-system, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.font-display {
+  font-family: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  font-feature-settings: "ss01", "ss02";
+  letter-spacing: -0.02em;
+}
+
+.eyebrow {
+  font-family: var(--font-inter), sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--burgundy);
+  font-weight: 500;
+}
+
+.hairline {
+  height: 1px;
+  background: var(--line);
+}
+
+.grain {
+  background-image:
+    radial-gradient(circle at 20% 10%, rgba(0, 0, 0, 0.025) 1px, transparent 1px),
+    radial-gradient(circle at 70% 60%, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+  background-size: 4px 4px, 6px 6px;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.85rem 1.5rem;
+  border-radius: 999px;
+  background: var(--burgundy);
+  color: var(--paper);
+  font-weight: 500;
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+.btn-primary:hover {
+  background: var(--burgundy-deep);
+  transform: translateY(-1px);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.85rem 1.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-weight: 500;
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+.btn-ghost:hover {
+  background: var(--cream-soft);
+  border-color: var(--ink-soft);
+}
+
+.card-surface {
+  background: var(--paper);
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+}
+
+.tile {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+  isolation: isolate;
+}
+.tile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 35%, rgba(0, 0, 0, 0.55) 100%);
+  z-index: 1;
+}
+.tile > * {
+  position: relative;
+  z-index: 2;
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
 }
