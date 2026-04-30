@@ -12,9 +12,9 @@ type RankedCard = {
     issuer: string;
     network: string;
     name: string;
-    annualFee: number;
+    annualFee: number | null;
     rewardProgram: string | null;
-    baseEarnRate: number;
+    baseEarnRate: number | null;
   };
   score: number;
   matchedRule: "merchant_benefit" | "category_rule" | "base_rate";
@@ -157,7 +157,7 @@ export default function AskPage() {
             </p>
             <div className="mt-6 flex flex-wrap gap-2 text-xs uppercase tracking-[0.18em]">
               <span className="px-3 py-1 rounded-full bg-paper/10 border border-paper/20">
-                {ruleLabel(result.bestCard.matchedRule)} · {result.bestCard.score}x
+                {ruleLabel(result.bestCard.matchedRule)} · {result.bestCard.score > 0 ? `${result.bestCard.score}x` : "Review pending"}
               </span>
               {result.detectedMerchant && (
                 <span className="px-3 py-1 rounded-full bg-paper/10 border border-paper/20">
@@ -192,7 +192,7 @@ export default function AskPage() {
                     </div>
                   </div>
                   <span className="font-mono text-sm text-burgundy">
-                    {c.score}x
+                    {c.score > 0 ? `${c.score}x` : "Pending"}
                   </span>
                 </li>
               ))}

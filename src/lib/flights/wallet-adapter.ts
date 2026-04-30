@@ -71,7 +71,7 @@ export function adaptWalletCardToFlightInput(card: FlightWalletCardRecord): Wall
   }
 
   const travelInsuranceMarkers: string[] = [];
-  if (card.annualFee > FLIGHT_WALLET_FALLBACK_CONFIG.travelInsuranceAnnualFeeThreshold) {
+  if ((card.annualFee ?? 0) > FLIGHT_WALLET_FALLBACK_CONFIG.travelInsuranceAnnualFeeThreshold) {
     travelInsuranceMarkers.push("comprehensive_travel_insurance");
   }
 

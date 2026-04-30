@@ -9,6 +9,13 @@ export class AppAuthError extends Error {
   }
 }
 
+export class AppAuthorizationError extends Error {
+  constructor(message = 'Admin access required') {
+    super(message);
+    this.name = 'AppAuthorizationError';
+  }
+}
+
 export type SafeUser = Pick<User, 'id' | 'email'>;
 
 export function serializeUser(user: SafeUser): SafeUser {
@@ -50,4 +57,24 @@ export async function requireUser() {
   });
 
   return serializeUser(user);
+}
+
+function getAdminEmails() {
+  return new Set(
+    (process.env.ADMIN_EMAILS ?? '')
+      .split(',')
+      .map((email) => email.trim().toLowerCase())
+      .filter(Boolean),
+  );
+}
+
+export async function requireAdminUser() {
+  const user = await requireUser();
+  const adminEmails = getAdminEmails();
+
+  if (!adminEmails.has(user.email.toLowerCase())) {
+    throw new AppAuthorizationError();
+  }
+
+  return user;
 }

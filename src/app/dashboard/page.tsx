@@ -13,9 +13,11 @@ type WalletCard = {
     issuer: string;
     network: string;
     name: string;
-    annualFee: number;
+    annualFee: number | null;
     rewardProgram: string | null;
-    baseEarnRate: number;
+    baseEarnRate: number | null;
+    isVerified: boolean;
+    extractionNotes: string | null;
   };
 };
 type Offer = {
@@ -139,11 +141,13 @@ export default function DashboardPage() {
                       {w.card.name}
                     </div>
                     <div className="text-xs text-ink-muted">
-                      {w.card.issuer} · {w.card.rewardProgram ?? "Cashback"}
+                      {w.card.issuer} · {w.card.rewardProgram ?? "Program pending review"}
                     </div>
                   </div>
                   <span className="font-mono text-xs text-burgundy">
-                    {w.card.baseEarnRate}x base
+                    {w.card.isVerified && w.card.baseEarnRate != null
+                      ? `${w.card.baseEarnRate}x base`
+                      : "Review pending"}
                   </span>
                 </li>
               ))}

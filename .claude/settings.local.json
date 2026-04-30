@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find c:/Users/znaus/Desktop/Pointer/src -name \"route.ts\" -exec grep -l \"cards\\\\|Card\" {} \\\\;)",
+      "Bash(xargs grep:*)",
+      "Bash(npx prisma:*)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:AmexSaver123@db.xitqxfmzzkkkyxfzynpj.supabase.co:5432/postgres\" npx prisma migrate dev --name add_card_type)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:AmexSaver123@db.xitqxfmzzkkkyxfzynpj.supabase.co:5432/postgres\" npx prisma db pull)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:AmexSaver123@db.xitqxfmzzkkkyxfzynpj.supabase.co:5432/postgres\" npx prisma migrate resolve --applied 20260424040258_add_card_type)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:AmexSaver123@db.xitqxfmzzkkkyxfzynpj.supabase.co:5432/postgres\" npx prisma generate)",
+      "Bash(npx ts-node -e ':*)",
+      "Bash(npx tsx -e ':*)",
+      "Bash(node -e ':*)",
+      "Bash(npm run:*)",
+      "Bash(node -e 'const { PrismaClient } = require\\('\\\\''@prisma/client'\\\\''\\); const p = new PrismaClient\\(\\); p.merchant.findMany\\(\\).then\\(m => { console.log\\('\\\\''Merchants:'\\\\'', m.length\\); m.forEach\\(x => console.log\\('\\\\'' -'\\\\'', x.name, '\\\\''|'\\\\'', x.primaryCategory\\)\\); }\\).then\\(\\(\\) => p.cardCategoryRule.findMany\\({ distinct: ['\\\\''category'\\\\''] }\\)\\).then\\(r => { console.log\\('\\\\''Categories:'\\\\'', r.map\\(x => x.category\\)\\); }\\).finally\\(\\(\\) => p.$disconnect\\(\\)\\)')",
+      "Bash(curl -s -X POST http://localhost:3000/api/card-requests -H \"Content-Type: application/json\" -d '{\"cardName\": \"Test Card Request\", \"issuer\": \"Test Bank\"}')",
+      "Bash(taskkill /PID 15144 /F)",
+      "Bash(npx next:*)",
+      "Bash(netstat -ano)",
+      "Bash(taskkill //PID 15144 //F)",
+      "Bash(curl -s -X POST http://localhost:3000/api/card-requests -H \"Content-Type: application/json\" -d '{\"issuer\": \"Test Bank\"}')",
+      "Bash(curl -s -X POST http://localhost:3000/api/card-requests -H \"Content-Type: application/json\" -d '{\"cardName\": \"   \"}')",
+      "Bash(curl -s -X POST http://localhost:3000/api/card-requests -H \"Content-Type: application/json\" -d '{\"cardName\": \"Solo Card No Issuer\"}')",
+      "Bash(node --input-type=module -e ':*)"
+    ]
+  }
+}

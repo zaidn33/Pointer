@@ -14,15 +14,25 @@ model Card {
   issuer          String
   network         String
   name            String
-  annualFee       Float    @default(0)
+  cardType        String   @default("Personal") // Personal, Business, Student, Store
+  annualFee       Float?
   rewardProgram   String?
-  baseEarnRate    Float    @default(1.0)
+  baseEarnRate    Float?
+  isActive        Boolean  @default(true)
+  isVerified      Boolean  @default(false)
+  externalId      String?  @unique
+  sourceUrl       String?
+  extractionNotes String?
+  confidence      Float?
+  fetchedAt       DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  categoryRules   CardCategoryRule[]
+  categoryRules    CardCategoryRule[]
   merchantBenefits CardMerchantBenefit[]
-  userCards       UserCard[]
+  userCards        UserCard[]
+
+  @@unique([name, issuer])
 }
 
 model User {
@@ -96,6 +106,24 @@ model CardMerchantBenefit {
   merchant    Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
 
   @@unique([cardId, merchantId])
+}
+
+model CardRequest {
+  id              String   @id @default(uuid())
+  cardName        String
+  issuer          String?
+  notes           String?
+  status          String   @default("pending") // pending, approved, rejected, created_pending_review, fulfilled
+  source          String   @default("wallet_request")
+  userId          String?
+  reviewedAt      DateTime?
+  reviewedBy      String?
+  resolutionNotes String?
+  resolvedCardId  String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
 }
 
 model Offer {

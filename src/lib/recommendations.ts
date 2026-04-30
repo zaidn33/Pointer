@@ -138,6 +138,77 @@ async function resolveMerchant(normalizedQuery: string) {
   return null;
 }
 
+const PREAMBLES = [
+  'best card for ',
+  'which card for ',
+  'what card for ',
+  'recommend for ',
+  'recommendation for ',
+  'card for ',
+];
+
+const SEPARATORS = [' at ', ' for ', ' from ', ' with '];
+
+function parseDeterministicIntent(normalizedQuery: string): {
+  merchantCandidate: string | null;
+  category: string | null;
+} {
+  let q = normalizedQuery;
+
+  // Strip common preambles
+  for (const p of PREAMBLES) {
+    if (q.startsWith(p)) {
+      q = q.slice(p.length).trim();
+      break;
+    }
+  }
+
+  // Try splitting on prepositions
+  for (const sep of SEPARATORS) {
+    const idx = q.indexOf(sep);
+    if (idx < 0) continue;
+
+    const left = q.slice(0, idx).trim();
+    const right = q.slice(idx + sep.length).trim();
+    if (!left || !right) continue;
+
+    const leftCategory = resolveCategoryAlias(left);
+    if (leftCategory) {
+      return { merchantCandidate: right, category: leftCategory };
+    }
+
+    const rightCategory = resolveCategoryAlias(right);
+    if (rightCategory) {
+      return { merchantCandidate: left, category: rightCategory };
+    }
+  }
+
+  // Single-token category scan (skip if only one token — handled by direct lookup)
+  const tokens = q.split(' ');
+  if (tokens.length > 1) {
+    for (let i = 0; i < tokens.length; i++) {
+      const category = resolveCategoryAlias(tokens[i]);
+      if (category) {
+        const remainder = tokens
+          .filter((_, j) => j !== i)
+          .join(' ')
+          .trim();
+        return { merchantCandidate: remainder || null, category };
+      }
+    }
+  }
+
+  // After preamble stripping, try the remainder as a direct category
+  if (q !== normalizedQuery) {
+    const category = resolveCategoryAlias(q);
+    if (category) {
+      return { merchantCandidate: null, category };
+    }
+  }
+
+  return { merchantCandidate: null, category: null };
+}
+
 async function resolveRecommendationQuery(
   query: string,
   intent: ParsedRecommendationIntent | null,
@@ -168,10 +239,37 @@ async function resolveRecommendationQuery(
     };
   }
 
-  return {
-    merchant: null,
-    category: resolveCategory(normalizedQuery),
-  };
+  // Direct single-string category lookup
+  const directCategory = resolveCategory(normalizedQuery);
+  if (directCategory) {
+    return { merchant: null, category: directCategory };
+  }
+
+  // Deterministic split fallback for compound queries
+  const det = parseDeterministicIntent(normalizedQuery);
+  if (det.category || det.merchantCandidate) {
+    const splitMerchant = det.merchantCandidate
+      ? await resolveMerchant(normalizeQuery(det.merchantCandidate))
+      : null;
+
+    // Explicit query category takes priority over merchant's default
+    const splitCategory =
+      det.category ??
+      (splitMerchant?.primaryCategory
+        ? resolveCategoryCandidate(splitMerchant.primaryCategory)
+        : null);
+
+    if (splitMerchant || splitCategory) {
+      return { merchant: splitMerchant, category: splitCategory };
+    }
+
+    // Graceful degradation: return category alone if merchant not in DB
+    if (det.category) {
+      return { merchant: null, category: det.category };
+    }
+  }
+
+  return { merchant: null, category: null };
 }
 
 async function loadRecommendationLlmContext() {
@@ -239,6 +337,8 @@ function serializeRecommendationCard(card: WalletCard['card']) {
     annualFee: card.annualFee,
     rewardProgram: card.rewardProgram,
     baseEarnRate: card.baseEarnRate,
+    isVerified: card.isVerified,
+    extractionNotes: card.extractionNotes,
   } satisfies RecommendationCard;
 }
 
@@ -282,7 +382,7 @@ function scoreCard(
   return {
     walletCardId: walletCard.id,
     card,
-    score: walletCard.card.baseEarnRate,
+    score: walletCard.card.baseEarnRate ?? 0,
     matchedRule: 'base_rate',
   };
 }
@@ -322,6 +422,10 @@ function buildExplanation(
     return `Use ${bestCard.card.name} because it earns ${formatScore(
       bestCard.score,
     )} on ${resolution.category}.`;
+  }
+
+  if (bestCard.score <= 0) {
+    return `Use ${bestCard.card.name} only as a temporary fallback for ${target}; its reward data still needs review.`;
   }
 
   return `Use ${bestCard.card.name} because it has the strongest base earn rate in your saved wallet for ${target}.`;

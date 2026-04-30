@@ -21,6 +21,8 @@ const cardSelect = {
   annualFee: true,
   rewardProgram: true,
   baseEarnRate: true,
+  isVerified: true,
+  extractionNotes: true,
 } satisfies Prisma.CardSelect;
 
 const flightCardSelect = {
@@ -89,10 +91,10 @@ export async function listWalletCardsForFlights(userId: string) {
 export async function addCardToWallet(userId: string, cardId: string) {
   const card = await prisma.card.findUnique({
     where: { id: cardId },
-    select: { id: true },
+    select: { id: true, isActive: true, isVerified: true },
   });
 
-  if (!card) {
+  if (!card || !card.isActive || !card.isVerified) {
     throw new WalletError('not_found', 'Card not found.');
   }
 
